@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Admin {
+  id         Int      @id @default(autoincrement())
+  user_id    String   @unique @db.Uuid
+  name       String?
+  created_at DateTime @default(now())
+
+  @@map("admins")
+}
+
+model Application {
+  id               String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id          String       @unique @db.Uuid
+  email            String?
+  name             String
+  dob              DateTime?    @db.Date
+  category         String?
+  address          String?
+  phone            String?
+  cgpa             Float?
+  graduation_marks Float?
+  nbhm_eligible    Boolean      @default(false)
+  created_at       DateTime     @default(now())
+  updated_at       DateTime     @default(now())
+
+  education        Education[]
+  exam_scores      ExamScore[]
+
+  @@map("applications")
+}
+
+model Education {
+  id             Int         @id @default(autoincrement())
+  application_id String      @db.Uuid
+  level          String
+  discipline     String?
+  institute      String?
+  study_type     String?
+  year           Int?
+  percentage     Float?
+  division       String?
+
+  application    Application @relation(fields: [application_id], references: [id], onDelete: Cascade)
+
+  @@unique([application_id, level])
+  @@map("education")
+}
+
+model ExamScore {
+  id             Int         @id @default(autoincrement())
+  application_id String      @db.Uuid
+  exam_type      String
+  score          Float?
+  year           Int?
+
+  application    Application @relation(fields: [application_id], references: [id], onDelete: Cascade)
+
+  @@map("exam_scores")
+}
