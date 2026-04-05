@@ -70,8 +70,16 @@ const examDetailSchema = z.object({
     ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['custom_exam_name'], message: 'Custom exam name is required.' })
   }
 
-  if (data.percentile == null && data.rank == null) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['percentile'], message: 'Provide either percentile or rank.' })
+  if (data.score == null) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['score'], message: 'Score is required.' })
+  }
+
+  if (data.percentile == null) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['percentile'], message: 'Percentile is required.' })
+  }
+
+  if (data.air == null) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['air'], message: 'All India Rank is required.' })
   }
 })
 
@@ -80,7 +88,10 @@ export const applicationSchema = z.object({
   last_name: z.string().min(1, 'Last name is required').optional().nullable(),
   name: z.string().optional().nullable(),
   gender: z.enum(['Male', 'Female', 'Other']).optional().nullable(),
-  email: z.string().email('Invalid email').optional().nullable(),
+  email: z.preprocess(
+    (value) => (value === '' || value === undefined ? null : value),
+    z.string().email('Invalid email').nullable().optional()
+  ),
   dob: z.string().optional().nullable(),
   category: z.enum(['GEN', 'OBC', 'SC', 'ST']).optional(),
   marital_status: z.enum(['Single', 'Married', 'Divorced', 'Widowed']).optional().nullable(),
@@ -91,6 +102,7 @@ export const applicationSchema = z.object({
   study_mode: z.enum(['Regular', 'Part-time / Online']).optional().nullable(),
   address: z.string().optional(),
   phone: z.string().optional(),
+  declaration_accepted: z.boolean().optional().default(false),
   nbhm_eligible: z.boolean().optional().default(false),
   education: z.array(educationSchema).optional().default([]),
   exam_details: z.array(examDetailSchema).optional().default([]),
@@ -116,6 +128,10 @@ export const applicationSchema = z.object({
   if (!examEntries.length) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['exam_details'], message: 'At least one exam detail is required.' })
   }
+
+  if (data.declaration_accepted !== true) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['declaration_accepted'], message: 'You must accept the declaration before submission.' })
+  }
 })
 
 /**
@@ -123,10 +139,12 @@ export const applicationSchema = z.object({
  */
 export function validate(schema) {
   return (req, res, next) => {
+    console.log('Incoming validation payload:', JSON.stringify(req.body, null, 2))
     const result = schema.safeParse(req.body)
     if (!result.success) {
       const errors = result.error.flatten().fieldErrors
       const formErrors = result.error.flatten().formErrors
+      console.log('Validation errors:', JSON.stringify({ errors, formErrors }, null, 2))
       return res.status(400).json({ error: 'Validation failed', details: errors, formErrors })
     }
     req.validatedBody = result.data

@@ -51,18 +51,22 @@ export function validateExamDetails(examDetails = []) {
       issues.push(`${label}: custom exam name is required when using Any Other.`)
     }
 
+    const score = toNumber(exam.score)
     const percentile = toNumber(exam.percentile)
-    const rank = toNumber(exam.rank)
+    const air = toNumber(exam.air)
 
-    if (percentile === null && rank === null) {
-      issues.push(`${label}: provide either percentile or rank.`)
+    if (score === null) {
+      issues.push(`${label}: score is required.`)
     }
 
-    if (exam.air !== undefined && exam.air !== null && exam.air !== '') {
-      const air = toNumber(exam.air)
-      if (air === null || air < 1) {
-        issues.push(`${label}: AIR must be a positive number.`)
-      }
+    if (percentile === null) {
+      issues.push(`${label}: percentile is required.`)
+    }
+
+    if (air === null) {
+      issues.push(`${label}: All India Rank is required.`)
+    } else if (air < 1) {
+      issues.push(`${label}: All India Rank must be a positive number.`)
     }
   })
 

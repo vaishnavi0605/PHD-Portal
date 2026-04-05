@@ -38,6 +38,7 @@ model Application {
   study_mode       String?
   address          String?
   phone            String?
+  declaration_accepted Boolean   @default(false)
   nbhm_eligible    Boolean      @default(false)
   eligibility_status  String?
   eligibility_message String?

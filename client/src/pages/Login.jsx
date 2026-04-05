@@ -91,7 +91,7 @@ export default function Login() {
           {/* Tabs */}
           <div className="flex p-1 bg-white/5 rounded-xl mb-8" role="tablist">
             {[
-              { key: 'student', label: 'Student Login', icon: GraduationCap },
+              { key: 'student', label: 'Applicant Login', icon: GraduationCap },
               { key: 'admin',   label: 'Admin Login', icon: ShieldCheck },
             ].map(t => (
               <button
@@ -127,7 +127,7 @@ export default function Login() {
               <form onSubmit={handleSendOtp} className="space-y-5">
                 <div>
                   <label htmlFor="login-email" className="form-label">
-                    {tab === 'admin' ? 'Admin Email Address' : 'Student Email Address'}
+                    {tab === 'admin' ? 'Admin Email Address' : 'Applicant Email Address'}
                   </label>
                   <div className="relative">
                     <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30" />
@@ -138,7 +138,7 @@ export default function Login() {
                       autoFocus
                       value={email}
                       onChange={e => setEmail(e.target.value)}
-                      placeholder={tab === 'admin' ? 'admin@iitrpr.ac.in' : 'student@iitrpr.ac.in'}
+                      placeholder={tab === 'admin' ? 'admin@iitrpr.ac.in' : 'applicant@iitrpr.ac.in'}
                       className="form-input pl-10"
                     />
                   </div>

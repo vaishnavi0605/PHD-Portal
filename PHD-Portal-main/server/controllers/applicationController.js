@@ -97,13 +97,14 @@ function normalizeApplicationPayload(body, userEmail) {
   const fullName = combineName(firstName, lastName, body.name || '')
   const researchPref1 = String(body.research_pref_1 || body.research_area || '').trim()
   const researchPref2 = String(body.research_pref_2 || '').trim() || null
+  const email = String(body.email || '').trim() || null
   const examEntries = body.exam_details?.length ? body.exam_details : body.exam_scores || []
 
   return {
     first_name: firstName || null,
     last_name: lastName || null,
     gender: body.gender || null,
-    email: body.email || userEmail,
+    email: email || userEmail,
     name: fullName,
     dob: body.dob ? new Date(body.dob) : null,
     category: body.category || null,
@@ -115,6 +116,7 @@ function normalizeApplicationPayload(body, userEmail) {
     study_mode: body.study_mode || null,
     address: body.address || null,
     phone: body.phone || null,
+    declaration_accepted: !!body.declaration_accepted,
     nbhm_eligible: !!body.nbhm_eligible,
     eligibility_status: 'Eligible',
     eligibility_message: 'Meets configured eligibility criteria.',
@@ -246,6 +248,7 @@ export async function fetchFlatApplications(params = {}) {
       study_mode: app.study_mode || '',
       address: app.address,
       phone: app.phone,
+      declaration_accepted: app.declaration_accepted,
       nbhm_eligible: app.nbhm_eligible,
       eligibility_status: app.eligibility_status || 'Pending',
       eligibility_message: app.eligibility_message || '',
@@ -295,9 +298,11 @@ export async function submitApplication(req, res) {
   const body = req.validatedBody
 
   try {
+    console.log('submitApplication validated body:', JSON.stringify(body, null, 2))
     const examEntries = body.exam_details?.length ? body.exam_details : body.exam_scores || []
     const examValidation = validateExamDetails(examEntries)
     if (!examValidation.valid) {
+      console.log('Exam validation issues:', JSON.stringify(examValidation.issues, null, 2))
       return res.status(400).json({
         error: 'Validation failed',
         details: { exam_details: examValidation.issues },
@@ -313,6 +318,7 @@ export async function submitApplication(req, res) {
     }
 
     const normalized = normalizeApplicationPayload(body, userEmail)
+    console.log('Normalized application payload:', JSON.stringify(normalized, null, 2))
     const { education, exam_details, ...applicationData } = normalized
 
     const applicationId = await prisma.$transaction(async (tx) => {
